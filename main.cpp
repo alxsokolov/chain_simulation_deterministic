@@ -14,8 +14,7 @@ using namespace std;
 
 //simulation parameters
 int N = 201;
-int Ntime = 5000;
-int Nrealisations = 1000;
+int Ntime = 1000;
 double C = 200;
 double a = 1.0;
 double m = 1.0;
@@ -32,7 +31,7 @@ vector<double> du (N);
 vector<double> u (N);
 
 double pair_force(double z, double a, double C) {
-    double alpha = 500.0;
+    double alpha = 0.0;
     double beta = 0.0;
     double force = C*(a-z) + alpha*pow((a-z), 2.0) + beta*pow((a-z), 3.0);
     return force;
@@ -40,8 +39,23 @@ double pair_force(double z, double a, double C) {
 
 double initial_displacement (double n, double a) {
 	double u_0 = 0;
+	int dN = 10;
+	double sigma = 0.5;
+	double dk = 2*M_PI/(N-1);
+	double k0 = 2*M_PI/(N-1)*10;
+	double k;
+	double factor = sigma/2;
+	double exp_minus;
+ 	double exp_plus; 
+
+	for (int i = - dN; i<=dN; i++) {
+		k = k0 - dk*i;
+		exp_minus = exp(-0.5*pow((k*(N-1)-2*M_PI)*sigma/(N-1), 2));
+		exp_plus = exp(-0.5*pow((k*(N-1)+2*M_PI)*sigma/(N-1), 2));
+		u_0 += factor*(exp_minus + exp_plus)*cos(k*n);
+    }
 	//u_0 = exp(-pow((n-int(N/2)), 2)/50)*sin(1*n); 
-    u_0 =sin(2*3.14/(N-1)*n);
+    //u_0 =sin(2*3.14/(N-1)*n);
     return u_0;
 }
 
