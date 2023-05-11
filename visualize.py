@@ -5,7 +5,7 @@ from mpl_toolkits import mplot3d
 import pdb
 
 
-n_particles = 201 
+n_particles = 501 
 n=np.arange(-(n_particles-1)/2, (n_particles-1)/2 + 1)
 
 plt.rc('text', usetex=True)

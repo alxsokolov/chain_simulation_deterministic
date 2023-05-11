@@ -13,17 +13,22 @@
 using namespace std;
 
 //simulation parameters
-int N = 201;
-int Ntime = 1000;
+int N = 501;
+int Ntime = 50000;
 double C = 200;
 double a = 1.0;
 double m = 1.0;
 double k_b = 1.0;
+double sigma = 50;
 double dt = 0.02*M_PI*sqrt(m/C);
+double sound_vel = a*sqrt(C/m);
+double k0 = 2*M_PI/(N-1)*40;
+double k1 = 2*M_PI/(N-1)*20;
+double wp_dist = 50;
 
 
 //open output file
-int output_interval = 100;
+int output_interval = 5000;
 ofstream file_data;
 
 vector<double> ddu (N);
@@ -31,7 +36,7 @@ vector<double> du (N);
 vector<double> u (N);
 
 double pair_force(double z, double a, double C) {
-    double alpha = 0.0;
+    double alpha = 1.0;
     double beta = 0.0;
     double force = C*(a-z) + alpha*pow((a-z), 2.0) + beta*pow((a-z), 3.0);
     return force;
@@ -39,30 +44,20 @@ double pair_force(double z, double a, double C) {
 
 double initial_displacement (double n, double a) {
 	double u_0 = 0;
-	int dN = 10;
-	double sigma = 0.5;
-	double dk = 2*M_PI/(N-1);
-	double k0 = 2*M_PI/(N-1)*10;
-	double k;
-	double factor = sigma/2;
-	double exp_minus;
- 	double exp_plus; 
-
-	for (int i = - dN; i<=dN; i++) {
-		k = k0 - dk*i;
-		exp_minus = exp(-0.5*pow((k*(N-1)-2*M_PI)*sigma/(N-1), 2));
-		exp_plus = exp(-0.5*pow((k*(N-1)+2*M_PI)*sigma/(N-1), 2));
-		u_0 += factor*(exp_minus + exp_plus)*cos(k*n);
-    }
-	//u_0 = exp(-pow((n-int(N/2)), 2)/50)*sin(1*n); 
-    //u_0 =sin(2*3.14/(N-1)*n);
-    return u_0;
+	double u_1 = 0;
+	u_0 = exp(-pow((n-(N-1)/2+wp_dist), 2)/2/pow(sigma,2))*sin(k0*n); 
+	u_1 = exp(-pow((n-(N-1)/2-wp_dist), 2)/2/pow(sigma,2))*sin(k1*n); 
+    return u_1;
 }
 
 double initial_velocities (double n, double a) {
 	double u_0 = 0;
-	u_0 = exp(-pow((n-int(N/2)), 2)/50)*cos(1*n); 
-    return u_0;
+	double u_1 = 0;
+	u_0 = exp(-pow((n-(N-1)/2+wp_dist), 2)/2/pow(sigma,2))*k0*cos(k0*n) - pow(sigma, -2)*exp(-pow((n-(N-1)/2)+wp_dist, 2)/2/pow(sigma,2))*(n-(N-1)/2+wp_dist)*sin(k0*n); 
+	u_1 = exp(-pow((n-(N-1)/2)-wp_dist, 2)/2/pow(sigma,2))*k1*cos(k1*n) - pow(sigma, -2)*exp(-pow((n-(N-1)/2) -wp_dist, 2)/2/pow(sigma,2))*(n-(N-1)/2-wp_dist)*sin(k1*n); 
+	u_0 *= -sound_vel;
+	u_1 *= sound_vel;
+    return u_1;
 }
 
 int main(int argc, const char * argv[]) {
